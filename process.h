@@ -3,27 +3,37 @@
 
 #include <sys/types.h>
 
-typedef struct {
-    int in; int in_fd;
-    int out; int out_fd;
-    int err; int err_fd;
-    char *command;
-    pid_t pid;
-} process_t;
+typedef struct _process {
+    /* Junction index to connect each FD to or NULL_JUNCTION to effectively
+     * specify /dev/null.
+     */
+    int in;
+    int out;
+    int err;
 
+    /* FDs after the process has been started. */
+    int in_fd;
+    int out_fd;
+    int err_fd;
+
+    /* Command to execute. */
+    char *command;
+
+    /* PID after the process has been started. */
+    pid_t pid;
+
+    /* Linked-list pointer. */
+    struct _process *next;
+} process_t;
+extern process_t *procs;
+
+/* Junction indices for our own FDs. */
 extern int plumb_in, plumb_out, plumb_err;
 
 void process_add(process_t *p);
 void process_reset(void);
 
-typedef struct proc_entry {
-    process_t *proc;
-    struct proc_entry *next;
-} proc_entry_t;
-extern proc_entry_t *procs;
-
 size_t in_count(int junction_id);
 size_t out_count(int junction_id);
-
 
 #endif

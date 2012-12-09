@@ -27,34 +27,33 @@ int main(int argc, char **argv) {
         junctions[i].in_sz = junctions[i].out_sz = 0;
     }
 
-    for (proc_entry_t *p = procs; p != NULL; p = p->next) {
-        if (start(p->proc->command,
-            &p->proc->in_fd,
-            &p->proc->out_fd,
-            &p->proc->err_fd,
-            &p->proc->pid)) {
-            fprintf(stderr, "Failed to start '%s'\n", p->proc->command);
+    for (process_t *p = procs; p != NULL; p = p->next) {
+        if (start(p->command,
+            &p->in_fd,
+            &p->out_fd,
+            &p->err_fd,
+            &p->pid)) {
+            fprintf(stderr, "Failed to start '%s'\n", p->command);
             return -1;
         }
     }
 
-    for (proc_entry_t *p = procs; p != NULL; p = p->next) {
+    for (process_t *p = procs; p != NULL; p = p->next) {
         junction_t *j;
-        assert(p->proc != NULL);
-        if (p->proc->in != NULL_JUNCTION) {
-            assert(p->proc->in <= max_junction);
-            j = &junctions[p->proc->in];
-            j->out[j->out_sz++] = p->proc->in_fd;
+        if (p->in != NULL_JUNCTION) {
+            assert(p->in <= max_junction);
+            j = &junctions[p->in];
+            j->out[j->out_sz++] = p->in_fd;
         }
-        if (p->proc->out != NULL_JUNCTION) {
-            assert(p->proc->out <= max_junction);
-            j = &junctions[p->proc->out];
-            j->in[j->in_sz++] = p->proc->out_fd;
+        if (p->out != NULL_JUNCTION) {
+            assert(p->out <= max_junction);
+            j = &junctions[p->out];
+            j->in[j->in_sz++] = p->out_fd;
         }
-        if (p->proc->err != NULL_JUNCTION) {
-            assert(p->proc->err <= max_junction);
-            j = &junctions[p->proc->err];
-            j->in[j->in_sz++] = p->proc->err_fd;
+        if (p->err != NULL_JUNCTION) {
+            assert(p->err <= max_junction);
+            j = &junctions[p->err];
+            j->in[j->in_sz++] = p->err_fd;
         }
     }
 
