@@ -9,11 +9,10 @@ else
 Q := @
 endif
 
-SOURCES = \
-    arguments.c \
-    main.c \
-    process.c \
-    util.c \
+# Lazy source calculation. Assume every C file needs to be compiled and linked
+# and every C file depends on every header.
+SOURCES = $(sort $(wildcard *.c))
+${SOURCES}: $(filter-out main.h,$(SOURCES:%.c=%.h))
 
 plumb: $(SOURCES:%.c=%.o)
 	${Q}${CC} ${LDFLAGS} -o $@ $^

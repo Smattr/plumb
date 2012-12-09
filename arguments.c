@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "arguments.h"
+#include "junction.h"
 #include "process.h"
 #include "util.h"
 
@@ -18,8 +19,8 @@ static void usage(FILE *stream) {
     , argv0);
 }
 
-static struct process *new_process(char *command) {
-    struct process *p = (struct process*)malloc(sizeof(struct process));
+static process_t *new_process(char *command) {
+    process_t *p = (process_t*)malloc(sizeof(process_t));
     if (p == NULL) {
         return NULL;
     }
@@ -30,9 +31,9 @@ static struct process *new_process(char *command) {
             return NULL;
         }
     }
-    p->in = -1;
-    p->out = -1;
-    p->err = -1;
+    p->in = NULL_JUNCTION;
+    p->out = NULL_JUNCTION;
+    p->err = NULL_JUNCTION;
     p->pid = 0;
     return p;
 }
@@ -44,6 +45,7 @@ static void set(int *target, char *val) {
         fprintf(stderr, "Illegal junction ID '%s'\n", val);
         exit(1);
     }
+    if (i > max_junction) max_junction = i;
     *target = i;
 }
 
@@ -63,7 +65,7 @@ int parse_options(int argc, char **argv) {
         return -1;
     }
 
-    struct process *current = NULL;
+    process_t *current = NULL;
 
     while (1) {
         int opt_ind, c = getopt_long(argc, argv, "0:1:2:c:?", opts, &opt_ind);

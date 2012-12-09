@@ -1,19 +1,37 @@
 #include <stdlib.h>
+#include <string.h>
 
+#include "junction.h"
 #include "process.h"
 #include "util.h"
 
-struct proc_entry {
-    struct process *proc;
-    struct proc_entry *next;
-};
-static struct proc_entry *procs = NULL;
+proc_entry_t *procs = NULL;
 
-int plumb_in = -1,
-    plumb_out = -1,
-    plumb_err = -1;
+size_t in_count(int junction_id) {
+    size_t count = 0;
+    for (proc_entry_t *p = procs; p != NULL; p = p->next) {
+        if (p->proc->out == junction_id)
+            ++count;
+        if (p->proc->err == junction_id)
+            ++count;
+    }
+    return count;
+}
 
-void process_add(struct process *p) {
+size_t out_count(int junction_id) {
+    size_t count = 0;
+    for (proc_entry_t *p = procs; p != NULL; p = p->next) {
+        if (p->proc->in == junction_id)
+            ++count;
+    }
+    return count;
+}
+
+int plumb_in = NULL_JUNCTION,
+    plumb_out = NULL_JUNCTION,
+    plumb_err = NULL_JUNCTION;
+
+void process_add(process_t *p) {
     struct proc_entry *pe = (struct proc_entry*)xalloc(sizeof(struct proc_entry));
     pe->proc = p;
     pe->next = procs;
